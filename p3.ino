@@ -1,6 +1,5 @@
-
 #include <AccelStepper.h>
-#include <Servo.h>///////////pendiente gripper
+#include <Servo.h> ///////////pendiente gripper
 #include <math.h>
 #include <TimerOne.h>
 
@@ -29,8 +28,6 @@ int points[numPoints][4] = {
   {-450, -550, 650, 15750}  // Punto 8
 };
 
-
-
 double x = 10.0;
 double y = 10.0;
 double L1 = 228; // L1 = 228mm
@@ -46,19 +43,21 @@ const float zDistanceToSteps = 100;
 
 byte inputValue[5];
 int k = 0;
+bool OBJVAL = false; // Bandera para determinar si el cubo es válido (verde)
 bool paused = false;
 bool startCommandReceived = false;
 bool stopCommandReceived = false;
 String content = "";
 int data[10];
+
 int theta1Array[100];
 int theta2Array[100];
 int phiArray[100];
 int zArray[100];
 int gripperArray[100];
 int positionsCounter = 0;
-volatile bool toggle = false;
 
+volatile bool toggle = false; // Declarar toggle como variable global
 
 void setup() {
   Serial.begin(115200);
@@ -77,40 +76,48 @@ void setup() {
   stepper3.setAcceleration(2000);
   stepper4.setMaxSpeed(4000);
   stepper4.setAcceleration(2000);
-/////////////////////////// pendiente gripper
+  
   gripperServo.attach(A0, 600, 2500);
   data[6] = 180;
   gripperServo.write(data[6]);
-  ////////////////////////////////////
+  
   delay(1000);
   data[5] = 100;
   homing();
 
-  
-  // Configurar Timer1 para imprimir "VAL" cada 20 segundos
+  // Configurar Timer1 para alternar entre imprimir "VAL" y "DEF"
   Timer1.initialize(20000000); // 20 segundos en microsegundos
   Timer1.attachInterrupt(printVal);
 }
 
 void loop() {
-
-  /////test def/val
   // Esperar el comando "START" para iniciar
-  if (!startCommandReceived) {
+  if (!startCommandReceived || stopCommandReceived) {
     if (Serial.available() > 0) {
       String command = Serial.readStringUntil('\n');
       command.trim();
       if (command == "START") {
         startCommandReceived = true;
         stopCommandReceived = false;
-        Serial.println("Comando START recibido. Iniciando...");
+        Serial.println("SISTEMA INICIADO");
+      } else if (command == "STOP") {
+        startCommandReceived = false;
+        stopCommandReceived = true;
+        Serial.println("SISTEMA DETENIDO");
       }
     }
     return; // No hacer nada hasta recibir el comando "START"
   }
 
-
+  // Resto del código del bucle
   for (int i = 0; i < numPoints; i++) {
+    // Esperar a que OBJVAL sea true para procesar el cubo
+    while (!OBJVAL) {
+      // Descartar el cubo por la banda transportadora
+      Serial.println("Cubo descartado");
+      delay(1000); // Espera un segundo antes de verificar nuevamente
+    }
+
     // Mover a la banda transportadora
     moveToPosition(conveyorBeltPosition);
     delay(1000); // Espera un segundo antes de tomar el cubo
@@ -130,6 +137,9 @@ void loop() {
     // Imprimir el punto actual después de visitarlo
     Serial.print("P");
     Serial.println(i + 1);
+
+    // Cambiar la bandera a false después de procesar el cubo
+    OBJVAL = false;
 
     // Verificar si se debe pausar
     while (paused) {
@@ -166,13 +176,14 @@ void loop() {
   }
 }
 
-
 void printVal() {
   if (toggle) {
     Serial.println("VAL");
+    OBJVAL = true; // Cambiar la bandera a true cuando se reciba "VAL"
     Timer1.initialize(35000000); // 35 segundos en microsegundos
   } else {
     Serial.println("DEF");
+    OBJVAL = false; // Cambiar la bandera a false cuando se reciba "DEF"
     Timer1.initialize(20000000); // 20 segundos en microsegundos
   }
   toggle = !toggle;

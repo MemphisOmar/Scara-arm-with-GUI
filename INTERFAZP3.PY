@@ -35,12 +35,12 @@ def read_serial(leds, text_display, pause_button, reiniciar_button, led_indicato
             elif data == "VAL":
                 print("VAL received")  # Mensaje de depuración
                 status_led.bgcolor = ft.colors.GREEN
-                status_led.content = ft.Text("VALIDO", color=ft.colors.WHITE)
+                status_led.content = ft.Text("VALIDO", color=ft.colors.WHITE, size=60)  # Ajustar el tamaño del texto
                 status_led.update()
             elif data == "DEF":
                 print("DEF received")  # Mensaje de depuración
                 status_led.bgcolor = ft.colors.RED
-                status_led.content = ft.Text("DEFECTUOSO", color=ft.colors.WHITE)
+                status_led.content = ft.Text("DEFECTUOSO", color=ft.colors.WHITE, size=60)  # Ajustar el tamaño del texto
                 status_led.update()
             
             # Verificar si todos los LEDs están encendidos
@@ -101,7 +101,8 @@ def send_def(e):
 
 # Crear la interfaz
 def main(page):
-    page.window_full_screen = True
+    page.window_width = 1920
+    page.window_height = 1080
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
     leds = [ft.Container(width=100, height=100, bgcolor=ft.colors.BLACK) for _ in range(8)]  # Doble de tamaño
@@ -127,16 +128,12 @@ def main(page):
     start_button = ft.ElevatedButton(text="START", on_click=lambda e: start_button_click(e, start_button, start_led), width=200, height=100)
     
     # Nuevo LED de estado
-    status_led = ft.Container(width=200, height=100, bgcolor=ft.colors.WHITE, content=ft.Text(""))
-
-    # Botones para enviar "VAL" y "DEF"
-    val_button = ft.ElevatedButton(text="Enviar VAL", on_click=send_val, width=200, height=100)
-    def_button = ft.ElevatedButton(text="Enviar DEF", on_click=send_def, width=200, height=100)
+    status_led = ft.Container(width=600, height=300, bgcolor=ft.colors.WHITE, content=ft.Text("", size=60))  # Triplicar el tamaño
 
     # Contenedor para el botón START y su LED
     start_container = ft.Container(
         content=ft.Column([start_button, start_led], alignment=ft.MainAxisAlignment.CENTER),
-        alignment=ft.alignment.bottom_left
+        alignment=ft.alignment.center
     )
     
     # Organizar los elementos en la página
@@ -149,16 +146,14 @@ def main(page):
             ft.Column([
                 text_display,
                 text_input,
-                status_led,  # Añadir el nuevo LED de estado aquí
-                val_button,  # Añadir el botón para enviar "VAL"
-                def_button   # Añadir el botón para enviar "DEF"
             ], alignment=ft.MainAxisAlignment.CENTER)
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
         start_container,
         ft.Row([
             ft.Column([pause_button, led_indicator], alignment=ft.MainAxisAlignment.CENTER),
             reiniciar_button
-        ], alignment=ft.MainAxisAlignment.CENTER)
+        ], alignment=ft.MainAxisAlignment.CENTER),
+        status_led  # Añadir el nuevo LED de estado aquí, centrado y triplicado
     )
     
     # Iniciar el hilo para leer el puerto serial
