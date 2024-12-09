@@ -2,7 +2,11 @@
 #include <Servo.h> ///////////pendiente gripper
 #include <math.h>
 #include <TimerOne.h>
-
+#include <Wire.h>
+#include <Adafruit_TCS34725.h>
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+unsigned long previousMillis = 0; // Para almacenar el último tiempo en que se ejecutó printVal
+const long interval = 1000;
 #define limitSwitch1 11
 #define limitSwitch2 10
 #define limitSwitch3 A3
@@ -15,7 +19,7 @@ AccelStepper stepper4(1, 12, 13);
 Servo gripperServo; 
 
 int conveyorBeltPosition[4] = {0, 0, 0, 13500};
-
+volatile float r, g, b;
 const int numPoints = 8;
 int points[numPoints][4] = {
   {100, 500, 300, 15400}, // Punto 1
@@ -43,7 +47,6 @@ const float zDistanceToSteps = 100;
 
 byte inputValue[5];
 int k = 0;
-bool OBJVAL = false; // Bandera para determinar si el cubo es válido (verde)
 bool paused = false;
 bool startCommandReceived = false;
 bool stopCommandReceived = false;
@@ -57,10 +60,18 @@ int zArray[100];
 int gripperArray[100];
 int positionsCounter = 0;
 
+volatile bool OBJVAL = false;
 volatile bool toggle = false; // Declarar toggle como variable global
 
 void setup() {
   Serial.begin(115200);
+
+  if (tcs.begin()) {
+    Serial.println("Sensor TCS34725 iniciado correctamente.");
+  } else {
+    Serial.println("Error al iniciar el sensor TCS34725. Verifique la conexión.");
+    while (1); // Detener el programa si no se puede iniciar el sensor
+  }
 
   pinMode(limitSwitch1, INPUT_PULLUP);
   pinMode(limitSwitch2, INPUT_PULLUP);
@@ -84,13 +95,11 @@ void setup() {
   delay(1000);
   data[5] = 100;
   homing();
-
-  // Configurar Timer1 para alternar entre imprimir "VAL" y "DEF"
-  Timer1.initialize(20000000); // 20 segundos en microsegundos
-  Timer1.attachInterrupt(printVal);
 }
 
 void loop() {
+   static unsigned long lastSensorReadTime = 0;
+  const unsigned long sensorReadInterval = 1000;
   // Esperar el comando "START" para iniciar
   if (!startCommandReceived || stopCommandReceived) {
     if (Serial.available() > 0) {
@@ -109,32 +118,70 @@ void loop() {
     return; // No hacer nada hasta recibir el comando "START"
   }
 
+  // Leer valores del sensor RGB periódicamente
+  if (millis() - lastSensorReadTime >= sensorReadInterval) {
+    lastSensorReadTime = millis();
+    uint16_t r, g, b, c;
+    tcs.getRawData(&r, &g, &b, &c);
+
+    // Normalizar los valores RGB
+    float sum = r + g + b;
+    float red = r / sum;
+    float green = g / sum;
+
+    // Clasificar el color
+    if (red > green && red > 0.5) {
+      Serial.println("DEF");
+      OBJVAL = false;
+    } else if (green > red && green > 0.5) {
+      Serial.println("VAL");
+      OBJVAL = true;
+    }
+  }
+
   // Resto del código del bucle
   for (int i = 0; i < numPoints; i++) {
     // Esperar a que OBJVAL sea true para procesar el cubo
     while (!OBJVAL) {
-      // Descartar el cubo por la banda transportadora
-      Serial.println("Cubo descartado");
-      delay(1000); // Espera un segundo antes de verificar nuevamente
+      // Leer valores del sensor RGB periódicamente
+      if (millis() - lastSensorReadTime >= sensorReadInterval) {
+        lastSensorReadTime = millis();
+        uint16_t r, g, b, c;
+        tcs.getRawData(&r, &g, &b, &c);
+
+        // Normalizar los valores RGB
+        float sum = r + g + b;
+        float red = r / sum;
+        float green = g / sum;
+
+        // Clasificar el color
+        if (red > green && red > 0.5) {
+          Serial.println("DEF");
+          OBJVAL = false;
+        } else if (green > red && green > 0.5) {
+          Serial.println("VAL");
+          OBJVAL = true;
+        }
+      }
+      delay(100); // Espera un poco antes de verificar nuevamente
     }
 
     // Mover a la banda transportadora
     moveToPosition(conveyorBeltPosition);
-    delay(1000); // Espera un segundo antes de tomar el cubo
+    delay(500); 
 
     // Simular la acción de tomar el cubo
     gripperServo.write(90); // Cerrar el gripper
-    delay(500); // Espera medio segundo para asegurar que el cubo está tomado
+    delay(500); 
 
-    // Mover al punto de destino
+
     moveToPosition(points[i]);
-    delay(1000); // Espera un segundo antes de soltar el cubo
+    delay(500); 
 
-    // Simular la acción de soltar el cubo
-    gripperServo.write(180); // Abrir el gripper
-    delay(500); // Espera medio segundo para asegurar que el cubo está soltado
+    gripperServo.write(180); 
+    delay(500); 
 
-    // Imprimir el punto actual después de visitarlo
+
     Serial.print("P");
     Serial.println(i + 1);
 
@@ -174,19 +221,6 @@ void loop() {
       }
     }
   }
-}
-
-void printVal() {
-  if (toggle) {
-    Serial.println("VAL");
-    OBJVAL = true; // Cambiar la bandera a true cuando se reciba "VAL"
-    Timer1.initialize(35000000); // 35 segundos en microsegundos
-  } else {
-    Serial.println("DEF");
-    OBJVAL = false; // Cambiar la bandera a false cuando se reciba "DEF"
-    Timer1.initialize(20000000); // 20 segundos en microsegundos
-  }
-  toggle = !toggle;
 }
 
 void moveToPosition(int point[4]) {
