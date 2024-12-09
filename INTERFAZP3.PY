@@ -3,7 +3,7 @@ import serial
 import threading
 
 # Configuración del puerto serial
-ser = serial.Serial('COM13', 115200, timeout=1)  # Añadir timeout para evitar bloqueos
+ser = serial.Serial('COM3', 115200, timeout=1)  # Añadir timeout para evitar bloqueos
 
 # Función para leer datos del puerto serial
 def read_serial(leds, text_display, pause_button, reiniciar_button, led_indicator, start_button, status_led):
@@ -119,6 +119,7 @@ def main(page):
         ft.Text("Malla 2")
     ], spacing=10)
 
+
     text_display = ft.Text(value="", size=20)
     text_input = ft.TextField(label="Enviar al serial", on_submit=lambda e: send_serial(e, text_input))
     reiniciar_button = ft.ElevatedButton(text="REINICIAR", on_click=lambda e: send_reiniciar(e, leds), disabled=True, width=200, height=100)
@@ -132,12 +133,19 @@ def main(page):
 
     # Contenedor para el botón START y su LED
     start_container = ft.Container(
-        content=ft.Column([start_button, start_led], alignment=ft.MainAxisAlignment.CENTER),
+        content=ft.Row([start_led, start_button], alignment=ft.MainAxisAlignment.CENTER),
+        alignment=ft.alignment.center
+    )
+    
+    # Contenedor para el indicador de estado
+    status_container = ft.Container(
+        content=status_led,
         alignment=ft.alignment.center
     )
     
     # Organizar los elementos en la página
     page.add(
+        status_container,  # Añadir el contenedor del indicador de estado aquí, centrado y en la parte superior
         ft.Row([
             ft.Column([
                 led_grid_1,
@@ -148,15 +156,14 @@ def main(page):
                 text_input,
             ], alignment=ft.MainAxisAlignment.CENTER)
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-        start_container,
         ft.Row([
-            ft.Column([pause_button, led_indicator], alignment=ft.MainAxisAlignment.CENTER),
-            reiniciar_button
-        ], alignment=ft.MainAxisAlignment.CENTER),
-        status_led  # Añadir el nuevo LED de estado aquí, centrado y triplicado
+            start_container,
+            reiniciar_button,
+            pause_button,
+            led_indicator
+        ], alignment=ft.MainAxisAlignment.CENTER)
     )
     
-    # Iniciar el hilo para leer el puerto serial
     threading.Thread(target=read_serial, args=(leds, text_display, pause_button, reiniciar_button, led_indicator, start_button, status_led), daemon=True).start()
 
 # Ejecutar la aplicación Flet
