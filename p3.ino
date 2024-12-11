@@ -22,14 +22,14 @@ Servo gripperServo;
 int conveyorBeltPosition[4] = {0, 0, 0, 135}; // Banda transportadora en grados
 const int numPoints = 8;
 int points[numPoints][4] = {
-  {10, 50, 30, 154}, // Punto 1 en grados
-  {-15, -25, 35, 155}, // Punto 2 en grados
-  {20, 30, 40, 155}, // Punto 3 en grados
-  {-35, -75, 45, 156}, // Punto 4 en grados
-  {30, 60, 50, 156}, // Punto 5 en grados
-  {-35, -15, 55, 157}, // Punto 6 en grados
-  {40, 50, 60, 157}, // Punto 7 en grados
-  {-45, -55, 65, 158}  // Punto 8 en grados
+  {0, 105, 0, 85}, // Punto 1 en grados
+  {4, 115, 0, 85}, // Punto 2 en grados
+  {-10, 130, 0, 85}, // Punto 3 en grados
+  {-8, 115, 0, 85}, // Punto 4 en grados
+  {0, 105, 0, 100}, // Punto 5 en grados
+  {4, 115, 0, 100}, // Punto 6 en grados
+  {-10, 130, 0, 100}, // Punto 7 en grados
+  {-8, 115, 0, 100}  // Punto 8 en grados
 };
 
 double x = 10.0;
@@ -88,7 +88,7 @@ void setup() {
   stepper4.setMaxSpeed(4000);
   stepper4.setAcceleration(2000);
   
-  gripperServo.attach(A0, 600, 2500);
+  gripperServo.attach(53, 600, 2500);
   data[6] = 180;
   gripperServo.write(data[6]);
   
@@ -173,13 +173,14 @@ void loop() {
     // Simular la acción de tomar el cubo
     gripperServo.write(90); // Cerrar el gripper
     delay(500); // Espera medio segundo para asegurar que el cubo está tomado
-
+    moveToSafeZ();
+    delay(100);
     // Mover al punto de destino
     moveToPosition(points[i]);
     delay(1000); // Espera un segundo antes de soltar el cubo
 
     // Simular la acción de soltar el cubo
-    gripperServo.write(180); // Abrir el gripper
+    gripperServo.write(90); // Abrir el gripper
     delay(500); // Espera medio segundo para asegurar que el cubo está soltado
 
     // Imprimir el punto actual después de visitarlo
@@ -188,7 +189,8 @@ void loop() {
 
     // Cambiar la bandera a false después de procesar el cubo
     OBJVAL = false;
-
+    moveToSafeZ();
+    delay(100);
     // Verificar si se debe pausar
     while (paused) {
       if (Serial.available() > 0) {
@@ -244,6 +246,14 @@ void moveToPosition(int point[4]) {
 void serialFlush() {
   while (Serial.available() > 0) {
     Serial.read();
+  }
+}
+
+void moveToSafeZ() {
+  // Mover el motor 4 al punto seguro en Z (150 unidades)
+  stepper4.moveTo(165 * zDistanceToSteps);
+  while (stepper4.distanceToGo() != 0) {
+    stepper4.run();
   }
 }
 
