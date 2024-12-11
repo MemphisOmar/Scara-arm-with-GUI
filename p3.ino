@@ -18,18 +18,18 @@ AccelStepper stepper3(1, 4, 7); //////// PENDIENTE GRIPPER
 AccelStepper stepper4(1, 12, 13);
 Servo gripperServo; 
 
-int conveyorBeltPosition[4] = {0, 0, 0, 13500};
-volatile float r, g, b;
+// Puntos en grados
+int conveyorBeltPosition[4] = {0, 0, 0, 135}; // Banda transportadora en grados
 const int numPoints = 8;
 int points[numPoints][4] = {
-  {100, 500, 300, 15400}, // Punto 1
-  {-150, -250, 350, 15450}, // Punto 2
-  {200, 300, 400, 15500}, // Punto 3
-  {-350, -750, 450, 15550}, // Punto 4
-  {300, 600, 500, 15600}, // Punto 5
-  {-350, -150, 550, 15650}, // Punto 6
-  {400, 500, 600, 15700}, // Punto 7
-  {-450, -550, 650, 15750}  // Punto 8
+  {10, 50, 30, 154}, // Punto 1 en grados
+  {-15, -25, 35, 155}, // Punto 2 en grados
+  {20, 30, 40, 155}, // Punto 3 en grados
+  {-35, -75, 45, 156}, // Punto 4 en grados
+  {30, 60, 50, 156}, // Punto 5 en grados
+  {-35, -15, 55, 157}, // Punto 6 en grados
+  {40, 50, 60, 157}, // Punto 7 en grados
+  {-45, -55, 65, 158}  // Punto 8 en grados
 };
 
 double x = 10.0;
@@ -132,10 +132,10 @@ void loop() {
     // Clasificar el color
     if (red > green && red > 0.5) {
       Serial.println("DEF");
-      OBJVAL = true;
+      OBJVAL = false;
     } else if (green > red && green > 0.5) {
       Serial.println("VAL");
-      OBJVAL = false;
+      OBJVAL = true;
     }
   }
 
@@ -157,10 +157,10 @@ void loop() {
         // Clasificar el color
         if (red > green && red > 0.5) {
           Serial.println("DEF");
-          OBJVAL = true;
+          OBJVAL = false;
         } else if (green > red && green > 0.5) {
           Serial.println("VAL");
-          OBJVAL = false;
+          OBJVAL = true;
         }
       }
       delay(100); // Espera un poco antes de verificar nuevamente
@@ -225,15 +225,15 @@ void loop() {
 }
 
 void moveToPosition(int point[4]) {
-  stepper1.moveTo(point[0]);
-  stepper2.moveTo(point[1]);
-  stepper3.moveTo(point[2]);
-  stepper4.moveTo(point[3]);
+  stepper1.moveTo(point[0] * theta1AngleToSteps);
+  stepper2.moveTo(point[1] * theta2AngleToSteps);
+  stepper3.moveTo(point[2] * phiAngleToSteps);
+  stepper4.moveTo(point[3] * zDistanceToSteps);
 
-  while (stepper1.currentPosition() != point[0] || 
-         stepper2.currentPosition() != point[1] || 
-         stepper3.currentPosition() != point[2] || 
-         stepper4.currentPosition() != point[3]) {
+  while (stepper1.distanceToGo() != 0 || 
+         stepper2.distanceToGo() != 0 || 
+         stepper3.distanceToGo() != 0 || 
+         stepper4.distanceToGo() != 0) {
     stepper1.run();
     stepper2.run();
     stepper3.run();
