@@ -132,10 +132,10 @@ void loop() {
     // Clasificar el color
     if (red > green && red > 0.5) {
       Serial.println("DEF");
-      OBJVAL = false;
+      OBJVAL = true;
     } else if (green > red && green > 0.5) {
       Serial.println("VAL");
-      OBJVAL = true;
+      OBJVAL = false;
     }
   }
 
@@ -157,10 +157,10 @@ void loop() {
         // Clasificar el color
         if (red > green && red > 0.5) {
           Serial.println("DEF");
-          OBJVAL = false;
+          OBJVAL = true;
         } else if (green > red && green > 0.5) {
           Serial.println("VAL");
-          OBJVAL = true;
+          OBJVAL = false;
         }
       }
       delay(100); // Espera un poco antes de verificar nuevamente
@@ -168,20 +168,21 @@ void loop() {
 
     // Mover a la banda transportadora
     moveToPosition(conveyorBeltPosition);
-    delay(500); 
+    delay(1000); // Espera un segundo antes de tomar el cubo
 
     // Simular la acción de tomar el cubo
     gripperServo.write(90); // Cerrar el gripper
-    delay(500); 
+    delay(500); // Espera medio segundo para asegurar que el cubo está tomado
 
-
+    // Mover al punto de destino
     moveToPosition(points[i]);
-    delay(500); 
+    delay(1000); // Espera un segundo antes de soltar el cubo
 
-    gripperServo.write(180); 
-    delay(500); 
+    // Simular la acción de soltar el cubo
+    gripperServo.write(180); // Abrir el gripper
+    delay(500); // Espera medio segundo para asegurar que el cubo está soltado
 
-
+    // Imprimir el punto actual después de visitarlo
     Serial.print("P");
     Serial.println(i + 1);
 
