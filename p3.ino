@@ -89,7 +89,7 @@ void setup() {
   stepper4.setAcceleration(2000);
   
   gripperServo.attach(53, 600, 2500);
-  data[6] = 180;
+  data[6] = 100;
   gripperServo.write(data[6]);
   
   delay(1000);
@@ -130,10 +130,10 @@ void loop() {
     float green = g / sum;
 
     // Clasificar el color
-    if (red > green && red > 0.5) {
+    if (red > green && red > 0.35) {
       Serial.println("DEF");
       OBJVAL = false;
-    } else if (green > red && green > 0.5) {
+    } else if (green > red && green > 0.35) {
       Serial.println("VAL");
       OBJVAL = true;
     }
@@ -155,10 +155,10 @@ void loop() {
         float green = g / sum;
 
         // Clasificar el color
-        if (red > green && red > 0.5) {
+        if (red > green && red > 0.35) {
           Serial.println("DEF");
           OBJVAL = false;
-        } else if (green > red && green > 0.5) {
+        } else if (green > red && green > 0.35) {
           Serial.println("VAL");
           OBJVAL = true;
         }
@@ -171,19 +171,15 @@ void loop() {
     delay(1000); // Espera un segundo antes de tomar el cubo
 
     // Simular la acción de tomar el cubo
-    gripperServo.write(90); // Cerrar el gripper
+    gripperServo.write(180); // Cerrar el gripper
     delay(500); // Espera medio segundo para asegurar que el cubo está tomado
     moveToSafeZ();
     delay(100);
     // Mover al punto de destino
     moveToPosition(points[i]);
-    delay(1000); // Espera un segundo antes de soltar el cubo
-
-    // Simular la acción de soltar el cubo
+    delay(1000); 
     gripperServo.write(90); // Abrir el gripper
-    delay(500); // Espera medio segundo para asegurar que el cubo está soltado
-
-    // Imprimir el punto actual después de visitarlo
+    delay(500); 
     Serial.print("P");
     Serial.println(i + 1);
 
@@ -250,7 +246,6 @@ void serialFlush() {
 }
 
 void moveToSafeZ() {
-  // Mover el motor 4 al punto seguro en Z (150 unidades)
   stepper4.moveTo(165 * zDistanceToSteps);
   while (stepper4.distanceToGo() != 0) {
     stepper4.run();
