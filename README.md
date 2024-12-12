@@ -9,3 +9,4 @@ ROBOT ENSAMBLADO
 
 INTERFAZ FUNCIONANDO
 ![INTERFAZ](https://github.com/user-attachments/assets/7e1179a2-e61a-4aea-b2cd-a102f13f692a)
+![image](https://github.com/user-attachments/assets/bd5ca817-e123-4d63-8c4e-d8d6bd307309)
