@@ -5,8 +5,9 @@ ENSAMBLE EN SOLIDWORKS
 ![image](https://github.com/user-attachments/assets/763f2afd-31c3-489d-bdb9-a54f1b055ba8)
 
 ROBOT ENSAMBLADO
-![1](https://github.com/user-attachments/assets/637274f1-62cf-4c1d-8e38-ecc0a3003f98)
+![image](https://github.com/user-attachments/assets/c74df293-4193-46a2-bcd7-f374a48fad59)
+![image](https://github.com/user-attachments/assets/810a3a2f-6350-4f80-82d2-7c47eaa8a196)
 
 INTERFAZ FUNCIONANDO
-![INTERFAZ](https://github.com/user-attachments/assets/7e1179a2-e61a-4aea-b2cd-a102f13f692a)
 ![image](https://github.com/user-attachments/assets/bd5ca817-e123-4d63-8c4e-d8d6bd307309)
+![image](https://github.com/user-attachments/assets/150f2b4e-0d01-45b9-88c7-3d1d437973cb)
