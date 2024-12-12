@@ -12,14 +12,20 @@ const long interval = 1000;
 #define limitSwitch3 A3
 #define limitSwitch4 9
 
+#define motorPin1 36
+#define motorPin2 37
+#define sensorInicial 45
+#define sensorFinal 47
+#define servoPin 49
 AccelStepper stepper1(1, 2, 5); // (driver, STEP, DIR)
 AccelStepper stepper2(1, 3, 6);
 AccelStepper stepper3(1, 4, 7); //////// PENDIENTE GRIPPER
 AccelStepper stepper4(1, 12, 13);
 Servo gripperServo; 
+Servo conveyorServo;
 
 // Puntos en grados
-int conveyorBeltPosition[4] = {0, 0, 0, 135}; // Banda transportadora en grados
+int conveyorBeltPosition[4] = {10, 23, 0, 120}; // Banda transportadora en grados
 const int numPoints = 8;
 int points[numPoints][4] = {
   {0, 105, 0, 85}, // Punto 1 en grados
@@ -91,15 +97,22 @@ void setup() {
   gripperServo.attach(53, 600, 2500);
   data[6] = 100;
   gripperServo.write(data[6]);
-  
+  conveyorServo.write(180); // Posición inicial del servo
+
+
   delay(1000);
   data[5] = 100;
   homing();
+
+
+  digitalWrite(motorPin1, HIGH);
+  digitalWrite(motorPin2, LOW);
 }
 
 void loop() {
    static unsigned long lastSensorReadTime = 0;
   const unsigned long sensorReadInterval = 1000;
+  motorAdelante();
   // Esperar el comando "START" para iniciar
   if (!startCommandReceived || stopCommandReceived) {
     if (Serial.available() > 0) {
@@ -130,11 +143,13 @@ void loop() {
     float green = g / sum;
 
     // Clasificar el color
-    if (red > green && red > 0.35) {
+    if (red > green && red > 0.45) {
       Serial.println("DEF");
       OBJVAL = false;
-    } else if (green > red && green > 0.35) {
+      conveyorServo.write(125); // Activar el servo para el cubo defectuoso
+    } else if (green > red && green > 0.45) {
       Serial.println("VAL");
+      conveyorServo.write(180); // Activar el servo para el cubo defectuoso
       OBJVAL = true;
     }
   }
@@ -155,12 +170,14 @@ void loop() {
         float green = g / sum;
 
         // Clasificar el color
-        if (red > green && red > 0.35) {
+        if (red > green && red > 0.45) {
           Serial.println("DEF");
           OBJVAL = false;
-        } else if (green > red && green > 0.35) {
+          conveyorServo.write(180); // Activar el servo para el cubo defectuoso
+        } else if (green > red && green > 0.45) {
           Serial.println("VAL");
           OBJVAL = true;
+          conveyorServo.write(125); // Activar el servo para el cubo defectuoso
         }
       }
       delay(100); // Espera un poco antes de verificar nuevamente
@@ -294,4 +311,17 @@ void homing() {
   while (stepper1.currentPosition() != 0) {
     stepper1.run();
   }
+}
+
+
+
+
+void motorAdelante() {
+  digitalWrite(motorPin1, HIGH);
+  digitalWrite(motorPin2, LOW);
+}
+
+void motorParar() {
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, LOW);
 }
