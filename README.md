@@ -1,4 +1,5 @@
 INTERFAZ GRAFICA
+
 La interfaz grafica fue programada en Python con el framework Flet, es una interfaz dinamica donde comunica el serial con la aplicacion, así mostrando cambios en el mundo real.
 Cuenta con 2 matrices a el lado izquierdo donde al dejar el cubo en su lugar enciende el indicador del cubo por el cual estemos pasando, son 2 matrices de 2x2.
 El proceso se pausara al llenar las 2 matrices hasta que el operario reinicie el proceso.
