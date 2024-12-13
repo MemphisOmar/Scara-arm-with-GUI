@@ -13,6 +13,15 @@ ENSAMBLE EN SOLIDWORKS
 ![image](https://github.com/user-attachments/assets/763f2afd-31c3-489d-bdb9-a54f1b055ba8)
 
 ROBOT ENSAMBLADO
+
+El microcontrolador tiene 2 condiciones iniciales, la ubicacion I2C del sensor rgb para hacer el homing.
+
+Una vez finalizado el homing necesitar que la interfaz grafica envíe la orden de "START" para iniciar el proceso de deteccion.
+
+El robot cuenta con una cinematica directa resuelta para mover cada Joint en grados, y así visitar y modificar los puntos con mayor facilidad, los puntos a visitar son los 8 pertenecientes a la ubicacion matricial de los cubos y 1 perteneciente a la ubicacion final del cubo en la banda transportadora, para esto solo necesitamos obtener los vectores de posicion que llegaran a la ubicacion deseada y guardarlos en nuestro codigo.
+
+Si el cubo es valido ira por el al final de la banda y lo acomodara a su lugar asignado en la matriz, si es defectuoso el robot no avanzara hasta que el cubo sea descartado y llegue uno valido, todo esto con simples banderas.
+
 ![image](https://github.com/user-attachments/assets/c74df293-4193-46a2-bcd7-f374a48fad59)
 ![image](https://github.com/user-attachments/assets/810a3a2f-6350-4f80-82d2-7c47eaa8a196)
 
