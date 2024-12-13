@@ -3,7 +3,7 @@ import serial
 import threading
 
 # Configuración del puerto serial
-ser = serial.Serial('COM11', 115200, timeout=1)  # Añadir timeout para evitar bloqueos
+ser = serial.Serial('COM3', 115200, timeout=1)  # Añadir timeout para evitar bloqueos
 
 # Función para leer datos del puerto serial
 def read_serial(leds, text_display, pause_button, reiniciar_button, led_indicator, start_button, status_led):
